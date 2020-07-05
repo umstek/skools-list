@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { List, Input } from 'antd';
+import { List, Input, Divider, Button } from 'antd';
 
 import useDebounce from '../util/useDebounce';
 
@@ -11,26 +11,48 @@ const base_url = 'http://localhost:3000/schools';
 export function SchoolsListView() {
   const [schools, setSchools] = useState<School[]>([]);
   const [offset, setOffset] = useState(0);
-  const [limit, setLimit] = useState(5);
   const [filter, setFilter] = useState('');
   const debouncedFilter = useDebounce(filter);
 
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    const query = new URLSearchParams({
-      offset: offset.toString(),
-      limit: limit.toString(),
-      filter: debouncedFilter,
-    });
+    const loadData = async () => {
+      setLoading(true);
 
-    const url = `${base_url}?${query.toString()}`;
+      const query = new URLSearchParams({
+        offset: offset.toString(),
+        limit: '5',
+        filter: debouncedFilter,
+      });
 
-    fetch(url)
-      .then((response) => response.ok && response.json())
-      .then(setSchools);
-  }, [offset, limit, debouncedFilter]);
+      const url = `${base_url}?${query.toString()}`;
+
+      const response = await fetch(url);
+      const result = response.ok ? await response.json() : [];
+      setSchools([...schools, ...result]);
+
+      setLoading(false);
+    };
+
+    loadData();
+  }, [offset, debouncedFilter]);
+
+  const loadMore = !loading ? (
+    <div
+      style={{
+        textAlign: 'center',
+        marginTop: 12,
+        height: 32,
+        lineHeight: '32px',
+      }}
+    >
+      <Button onClick={() => setOffset(offset + 5)}>Load more</Button>
+    </div>
+  ) : null;
 
   return (
-    <div>
+    <>
       <Input.Search
         loading={filter != debouncedFilter}
         id="search"
@@ -39,7 +61,14 @@ export function SchoolsListView() {
         value={filter}
         onSearch={console.log}
       />
-      <List grid={{ gutter: 16, column: 4 }} dataSource={schools} renderItem={SchoolCardView} />
-    </div>
+      <Divider orientation="center" plain />
+      <List
+        grid={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 4, gutter: 16 }}
+        dataSource={schools}
+        renderItem={SchoolCardView}
+        loadMore={loadMore}
+        loading={loading}
+      />
+    </>
   );
 }
