@@ -9,19 +9,23 @@ export class SchoolsService {
   constructor(@InjectModel(School.name) private schoolModel: Model<School>) {}
 
   async getSome(offset: number, limit: number, filter: string): Promise<School[]> {
+    let schools: School[];
+
     if (filter && filter.length > 0) {
-      return this.schoolModel
+      schools = await this.schoolModel
         .find({ $text: { $search: filter } })
+        .skip(offset)
+        .limit(limit)
+        .exec();
+    } else {
+      schools = await this.schoolModel
+        .find()
         .skip(offset)
         .limit(limit)
         .exec();
     }
 
-    return this.schoolModel
-      .find()
-      .skip(offset)
-      .limit(limit)
-      .exec();
+    return schools;
   }
 
   async getOneById(id: string): Promise<School> {
