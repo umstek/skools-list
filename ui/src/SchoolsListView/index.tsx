@@ -6,55 +6,72 @@ import useDebounce from '../util/useDebounce';
 import { School } from '../School';
 import SchoolCardView from './SchoolCardView';
 
-const base_url = 'http://localhost:3000/schools';
+async function fetchSchools(offset: number, filter: string) {
+  const query = new URLSearchParams({
+    offset: offset.toString(),
+    limit: '5',
+    filter,
+  });
 
-export function SchoolsListView() {
+  const url = `${process.env.BASE_URL}?${query.toString()}`;
+  const response = await fetch(url);
+  const result = response.ok ? await response.json() : ([] as School[]);
+
+  return result;
+}
+
+export function SchoolsListView(props: { signal: number }) {
   const [schools, setSchools] = useState<School[]>([]);
   const [offset, setOffset] = useState(0);
   const [filter, setFilter] = useState('');
   const debouncedFilter = useDebounce(filter);
-
   const [loading, setLoading] = useState(false);
+  const [noMore, setNoMore] = useState(false);
+
+  const loadData = async (filterChanged = false) => {
+    setLoading(true);
+
+    const result = await fetchSchools(filterChanged ? 0 : offset, debouncedFilter);
+
+    if (result.length < 5) {
+      setNoMore(true);
+      setOffset(filterChanged ? 0 : offset);
+    } else {
+      setNoMore(false);
+      setOffset((filterChanged ? 0 : offset) + 5);
+    }
+
+    if (filterChanged) {
+      setSchools(result);
+    } else {
+      setSchools([...schools, ...result]);
+    }
+
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
+    loadData(true);
+  }, [debouncedFilter, props.signal]);
 
-      const query = new URLSearchParams({
-        offset: offset.toString(),
-        limit: '5',
-        filter: debouncedFilter,
-      });
-
-      const url = `${base_url}?${query.toString()}`;
-
-      const response = await fetch(url);
-      const result = response.ok ? await response.json() : [];
-      setSchools([...schools, ...result]);
-
-      setLoading(false);
-    };
-
-    loadData();
-  }, [offset, debouncedFilter]);
-
-  const loadMore = !loading ? (
-    <div
-      style={{
-        textAlign: 'center',
-        marginTop: 12,
-        height: 32,
-        lineHeight: '32px',
-      }}
-    >
-      <Button onClick={() => setOffset(offset + 5)}>Load more</Button>
-    </div>
-  ) : null;
+  const loadMore =
+    !noMore && !loading ? (
+      <div
+        style={{
+          textAlign: 'center',
+          marginTop: 12,
+          height: 32,
+          lineHeight: '32px',
+        }}
+      >
+        <Button onClick={() => loadData()}>Load more</Button>
+      </div>
+    ) : null;
 
   return (
     <>
       <Input.Search
-        loading={filter != debouncedFilter}
+        loading={loading}
         id="search"
         size="large"
         onChange={(event) => setFilter(event.target.value)}

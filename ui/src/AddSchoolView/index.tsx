@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { Form, Input, InputNumber, Button, Space } from 'antd';
 import { School } from '../School';
 
-const base_url = 'http://localhost:3000/schools';
-
 async function addSchool(formFields: {
   name: string;
   street: string;
@@ -14,7 +12,10 @@ async function addSchool(formFields: {
 }) {
   const { name, studentCount, ...address } = formFields;
   const school = { name, studentCount, address } as School;
-  const response = await fetch(base_url, {
+  const response = await fetch(process.env.BASE_URL, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
     method: 'POST',
     body: JSON.stringify(school),
   });

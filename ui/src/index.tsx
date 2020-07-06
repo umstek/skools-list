@@ -8,6 +8,7 @@ import { AddSchoolView } from './AddSchoolView';
 
 const App = () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [schoolsAdded, setSchoolsAdded] = useState(0);
 
   return (
     <>
@@ -31,7 +32,7 @@ const App = () => {
           </Row>
           <Row justify="center">
             <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-              <SchoolsListView />
+              <SchoolsListView signal={schoolsAdded} />
             </Col>
           </Row>
         </Col>
@@ -46,7 +47,13 @@ const App = () => {
         destroyOnClose
         width="500"
       >
-        <AddSchoolView onItemAdded={() => setDrawerVisible(false)} />
+        <AddSchoolView
+          onFailed={() => {}}
+          onItemAdded={() => {
+            setDrawerVisible(false);
+            setSchoolsAdded(schoolsAdded + 1);
+          }}
+        />
       </Drawer>
     </>
   );
