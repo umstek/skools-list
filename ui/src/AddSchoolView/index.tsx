@@ -20,7 +20,7 @@ async function addSchool(formFields: {
     body: JSON.stringify(school),
   });
   if (!response.ok) {
-    return 'Failed to add.';
+    throw new Error('Failed to add.');
   }
   const result = await response.json();
 }
@@ -36,7 +36,13 @@ export function AddSchoolView(props: { onItemAdded: () => void; onFailed: () => 
       wrapperCol={{ span: 16 }}
       onFinish={async (formFields) => {
         setSubmitting(true);
-        await addSchool(formFields as any);
+        try {
+          await addSchool(formFields as any);
+        } catch (error) {
+          props.onFailed();
+          setSubmitting(false);
+          return;
+        }
         props.onItemAdded();
         setSubmitting(false);
       }}

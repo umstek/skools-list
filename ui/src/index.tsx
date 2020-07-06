@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { render } from 'react-dom';
-import { Typography, Col, Row, Button, Drawer } from 'antd';
+import { Typography, Col, Row, Button, Drawer, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 
 import { SchoolsListView } from './SchoolsListView';
@@ -48,10 +48,13 @@ const App = () => {
         width="500"
       >
         <AddSchoolView
-          onFailed={() => {}}
+          onFailed={() => {
+            message.error('Failed to add school.');
+          }}
           onItemAdded={() => {
             setDrawerVisible(false);
             setSchoolsAdded(schoolsAdded + 1);
+            message.info('School added.');
           }}
         />
       </Drawer>
