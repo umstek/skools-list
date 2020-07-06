@@ -1,47 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { School } from './school.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+
+import { School, CreateSchoolDto } from './school.schema';
 
 @Injectable()
 export class SchoolsService {
-  getSome(offset: number, limit: number, filter: string): School[] {
-    return [
-      {
-        name: filter || 'Xavier Institute',
-        studentCount: 2292,
-        address: {
-          state: 'New York',
-          postcode: '81034',
-          suburb: 'Salem Center',
-          street: '1407 Graymalkin Lane',
-        },
-      },
-      {
-        name: filter || 'Xavier Institute',
-        studentCount: 2292,
-        address: {
-          state: 'New York',
-          postcode: '81034',
-          suburb: 'Salem Center',
-          street: '1407 Graymalkin Lane',
-        },
-      },
-    ];
+  constructor(@InjectModel(School.name) private schoolModel: Model<School>) {}
+
+  async getSome(offset: number, limit: number, filter: string): Promise<School[]> {
+    if (filter && filter.length > 0) {
+      return this.schoolModel
+        .find({ $text: { $search: filter } })
+        .skip(offset)
+        .limit(limit)
+        .exec();
+    }
+
+    return this.schoolModel
+      .find()
+      .skip(offset)
+      .limit(limit)
+      .exec();
   }
 
-  getOneById(id: string): School {
-    return {
-      name: 'Xavier Institute',
-      studentCount: 2292,
-      address: {
-        state: 'New York',
-        postcode: id,
-        suburb: 'Salem Center',
-        street: '1407 Graymalkin Lane',
-      },
-    };
+  async getOneById(id: string): Promise<School> {
+    return this.schoolModel.findById(id).exec();
   }
 
-  create(school: School): string {
-    return 'am40igm2nalf3';
+  async create(school: CreateSchoolDto): Promise<string> {
+    const createdSchool = await new this.schoolModel(school).save();
+    return `"${createdSchool._id}"`;
   }
 }

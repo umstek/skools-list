@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { SchoolsService } from './schools.service';
-import { School } from './school.entity';
+import { School, CreateSchoolDto } from './school.schema';
 
 @Controller('schools')
 export class SchoolsController {
@@ -11,17 +11,17 @@ export class SchoolsController {
     @Query('offset') offset = 0,
     @Query('limit') limit = 5,
     @Query('filter') filter = '',
-  ): School[] {
-    return this.schoolsService.getSome(offset, limit, filter);
+  ): Promise<School[]> {
+    return this.schoolsService.getSome(Number(offset), Number(limit), filter);
   }
 
   @Get(':id')
-  get(@Param('id') id: string): School {
+  get(@Param('id') id: string): Promise<School> {
     return this.schoolsService.getOneById(id);
   }
 
   @Post()
-  post(@Body() school: School): string {
+  post(@Body() school: CreateSchoolDto): Promise<string> {
     return this.schoolsService.create(school);
   }
 }
