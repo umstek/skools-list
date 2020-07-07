@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { Document } from 'mongoose';
 import { IsNotEmpty, IsPositive, ValidateNested } from 'class-validator';
 
@@ -23,14 +24,14 @@ export const SchoolSchema = SchemaFactory.createForClass(School);
 SchoolSchema.index({ '$**': 'text' });
 
 export class CreateAddressDto {
-  @IsNotEmpty() street: string;
-  @IsNotEmpty() suburb: string;
-  @IsNotEmpty() postcode: string;
-  @IsNotEmpty() state: string;
+  @ApiProperty() @IsNotEmpty() street: string;
+  @ApiProperty() @IsNotEmpty() suburb: string;
+  @ApiProperty() @IsNotEmpty() postcode: string;
+  @ApiProperty() @IsNotEmpty() state: string;
 }
 
 export class CreateSchoolDto {
-  @IsNotEmpty() name: string;
-  @ValidateNested() address: CreateAddressDto;
-  @IsPositive() studentCount: number;
+  @ApiProperty() @IsNotEmpty() name: string;
+  @ApiProperty() @ValidateNested() address: CreateAddressDto;
+  @ApiProperty() @IsPositive() studentCount: number;
 }
