@@ -1,0 +1,30 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: cd ui
+    - run: yarn build
+    - run: cd ../api
+    - run: yarn build
+    - run: cp -R ../ui/dist/* ./client/
+    - run: rm -rf ../ui
+    - run: rm -rf ./src/ ./test/ ./node_modules
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
