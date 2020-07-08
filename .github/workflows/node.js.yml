@@ -19,12 +19,17 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: cd ui
-    - run: yarn build
-    - run: cd ../api
-    - run: yarn build
-    - run: cp -R ../ui/dist/* ./client/
-    - run: rm -rf ../ui
-    - run: rm -rf ./src/ ./test/ ./node_modules
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+    - run: cd ui && echo "BASE_URL=/schools" > .env && yarn && yarn build
+    - run: cd api && echo "DB=${{ secrets.DB }}" > .env
+    - run: mkdir ./api/client && cp -R ./ui/dist/* ./api/client/
+    - run: rm -rf .github .git ./ui/ ./api/test/ ./api/node_modules/ ./api/.gitignore
+    - run: cp -R ./api/* . && rm -rf ./api/
+    - run: npm install -g heroku
+    - run: git init
+    - run: git config user.name "${{ github.actor }}"
+    - run: git config user.email "wickrama@protonmail.ch"
+    - run: echo "${{ secrets.HEROKU_SECRET }}" >> ~/.netrc
+    - run: heroku git:remote -a skools-list
+    - run: git add -A
+    - run: git commit -m "${{ github.sha }}"
+    - run: git push -f heroku master
