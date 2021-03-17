@@ -28,7 +28,7 @@
     "@nestjs/platform-express": "7.3.0",
     "@nestjs/serve-static": "2.1.4",
     "@nestjs/swagger": "4.5.12",
-    "class-transformer": "0.3.1",
+    "class-transformer": "0.4.0",
     "class-validator": "0.13.1",
     "mongoose": "5.9.21",
     "reflect-metadata": "0.1.13",
